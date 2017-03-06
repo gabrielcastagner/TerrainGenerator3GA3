@@ -1,0 +1,11 @@
+Dear user! Before you use the program, read the terminal for 
+instructions on how to manipulate the camera, lights, etc.
+You should be able to see the instructions after you type make 
+into the terminal
+The program has two lights, a green and a red, and the program 
+initally starts out in a flat grid. Please press r to generate 
+a new grid.
+The program does being to be slow down when the 300x300 option is
+selected, so if it is having difficulty manuerving the camera,
+give it time, it will work.
+Regards, Gabe, 001412885
