@@ -1,4 +1,4 @@
-#ifdef __APPLE__
+k#ifdef __APPLE__
 #  include <OpenGL/gl.h>
 #  include <OpenGL/glu.h>
 #  include <GLUT/glut.h>
@@ -16,39 +16,47 @@ float cols[2][3] = {{0,0,0}, {1,1,1} };
 /***
  CAMERA INFORMATION
 ***/
-float pos[] = {0,0,0};
-float rot[] = {0, 0, 0};
+float pos[] = {0,0,0}; //Camera position
+float rot[] = {0, 0, 0}; //Camera rotation
+
 /***
  INITIAL CONDITION
+ These conditions are what setup the default terrain for the program
 ***/
-int viewMode = 0;
-bool solid = true;
-bool wireframe = false;
-bool both = false;
+int viewMode = 0; //View mode of the terrain
+bool solid = true; //Whether solid terrain is shown
+bool wireframe = false; //Whether wireframe terrain is shown
+bool both = false; //Whether solid and wireframe terrain is shown
 bool clearWire = false;
 bool flatview = false;
-bool quads = true;
-int sizex = 50;
-int sizez = 50;
+bool quads = true; //Whether quads or triangles are to be drawn
+int sizex = 50; //The X size of the terrain
+int sizez = 50; //The Z size of the terrain
 float yCoords[301][301]= {};//initially empty
-bool lightOn = true;
-float max = 0;
+bool lightOn = true; //Whether lighting is on/off
+float max = 0; //The peak height
 
 /*** 
  EYE LOCATION
  ***/
-float eye[] = {0,5,0};
-float angle = 0.0f;
+float eye[] = {0,5,0}; //The location of where the eye is pointing at
+float angle = 0.0f; //The angle of the eye
+
 /***
 LIGHTING LOCATIONS
 ***/
-float lightpos1[] = {50,20,-50,1};
-float lightpos2[] = {0,20,0,1};
+float lightpos1[] = {50,20,-50,1}; //Position of light1
+float lightpos2[] = {0,20,0,1}; //Position of light2
 	
-/* heightMap - takes in the the x and z dimentions of he graph
+/* heightMap - takes in the the x and z dimensions of he graph
 and the number of iterations that random will be applied.
 This generates a height map for the entire graph outputs it
-to a global YCoords value*/
+to a global YCoords value
+
+int x - The dimension in the x plane
+int z - The dimension in the z plane
+int n - The iteration count used to develop heights
+*/
 void heightMap(int x, int z, int n){
 	for(int w = 0;w<n;w++){
 	int randx = rand()%x;
@@ -57,7 +65,7 @@ void heightMap(int x, int z, int n){
 	int maxheight = (rand()%(sizex/8))+5;//random max height based on size
 	for(int i = 0;i<x;i++){
 		for(int j = 0;j<z; j++){
-		//below is the cirlce algorthim that was provided.
+		//below is the circle algorthim that was provided.
 		int newx = i - randx;
 		int newz = j - randz;
 		float d = sqrtf((newx*newx)+(newz*newz));
@@ -72,17 +80,27 @@ void heightMap(int x, int z, int n){
 
 
 }
-/*getHeight- returns the height of the coordinate in the grid*/
+/*getHeight- returns the height of the coordinate in the grid
+
+int x - The dimension in the x plane
+int z - The dimension in the z plane
+
+float return - The height at the specified x and z coordinate
+*/
 float getHeight(int x,int z){
  	return yCoords[x][z];
 }
+
 /* drawGrid - takes in the point of orgin of where it will be drawn,
 It also takes in the x and z coords, w and l respectfully, to return
 a complete grid.
- */
-void drawGrid(float* c, float w,float l)
 
-{
+float* c - Point of origin of where the terrain will be drawn
+float w - The width in x coordinates of the grid
+float l - The length in z cordinates of the grid
+
+ */
+void drawGrid(float* c, float w,float l){
 	
 	glPushMatrix();
 	
@@ -211,6 +229,8 @@ void drawGrid(float* c, float w,float l)
 }
 	glPopMatrix();//grid
 }
+
+
 /* createdNormalVectors - creates the normal vectors for each
 vertice by getting the cross product*/
 void createNormalVectors(){
@@ -219,10 +239,13 @@ void createNormalVectors(){
 	float vfinal[3];
 	for(int i =0;i<sizex; i++){
 		for(int j = 0;j<sizez;j++){
+
+		//Intialize the first vertex	
 		v1[0] = i+1;
 		v1[1] = getHeight(i+1,j) - getHeight(i,j);
 		v1[2] = j;
 		
+		//Intialize the second vertex
 		v2[0] = i+1;
 		v2[1] = getHeight(i+1,j+1) - getHeight(i,j);
 		v2[2] = j+1;
@@ -241,20 +264,29 @@ void createNormalVectors(){
 
 
 }
+
 /*viewModeDraw() - based on the current state of the viewModel,
 this function desides which mesh type to draw
+
+The viewModeDraw() can draw either a solid terrain, a wire mesh terrain, or both
+with the wire mesh being on top of the solid terrain.
 */
 void viewModeDraw(){
 	float origin[3] = {0,0,0};
 	
+	//Draw the solid terrain
 	if(solid){
 		glPolygonMode(GL_FRONT, GL_FILL);
-		drawGrid(origin, sizex, sizez); //draws solid
-	}else if(wireframe){
+		drawGrid(origin, sizex, sizez);
+	}
+	//Draw the wireframe terrain
+	else if(wireframe){
 		
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		drawGrid(origin, sizex, sizez); //draws Wireframe
-	}else if(both){
+	}
+	//Draw both the solid and wireframe terrain
+	else if(both){
 		
 		glPolygonMode(GL_FRONT, GL_FILL);
 		drawGrid(origin, sizex, sizez); //draws floor
@@ -270,17 +302,27 @@ void viewModeDraw(){
 	glutPostRedisplay();
 
 }
+
+/*keyboard() - Takes a keyboard input of various letter keys on a standard QWERTY keyboard
+
+unsigned char key - The key that is pressed.
+int x - The x coordinate of the mouse
+int y - The y coordinate of the mouse
+*/
 void keyboard(unsigned char key, int x, int y)
 {
 
 	/* key presses move the cube, if it isn't at the extents (hard-coded here) */
 	switch (key)
 	{	glMatrixMode(GL_MODELVIEW);
+
+		//Quit/Close/Exit the program
 		case 'q':
 		case 27:
 			exit (0);
 			break;
 
+		//Resets the terrain
 		case 'r':
 		case 'R':
 			max = 0;
@@ -293,6 +335,7 @@ void keyboard(unsigned char key, int x, int y)
 			heightMap(sizex,sizez,rand()%(sizex/2)+10);//draws a new terrain from 10 to 20
 			break;
 
+		//Cycle through solid, wireframe, and wireframe/solid terrains
 		case 'w':
 		case 'W':
 			
@@ -311,6 +354,7 @@ void keyboard(unsigned char key, int x, int y)
 			}
 			break;
 
+		//Enable or disable the lighting
 		case 'e':
 		case 'E':
 			if(lightOn){
@@ -323,10 +367,14 @@ void keyboard(unsigned char key, int x, int y)
 			glEnable(GL_LIGHTING);
 			}
 			break;
+
+		//Toggle between triangles/quads to be drawn
 		case 't':
 		case 'T':
 			quads = !quads;
 			break;
+
+		//Change the light position with keys i, j, k, l, o, and u
 		case 'i':
 		case 'I':
 			lightpos1[2] +=1;
@@ -357,6 +405,8 @@ void keyboard(unsigned char key, int x, int y)
 			lightpos1[0] +=1;
 			lightpos2[0] -=1;
 			break;
+
+		//Change to the flatview of the terrain
 		case 'v':
 		case 'V':
 			flatview = !flatview;
@@ -384,74 +434,89 @@ void reset(){
 	eye[1] = 5;
 	eye[2] = 0;
 }
+
+/*keyboard() - Takes a keyboard input of various special keys on a standard QWERTY keyboard
+These keys are keys like CTRL, SHIFT, ALT, ENTER, etc...
+
+int key - The key that is pressed.
+int x - The x coordinate of the mouse
+int y - The y coordinate of the mouse
+*/
 void special(int key, int x, int y)
 {
-	/* arrow key presses move the camera */
-    /************************************************************************
-     
-                        CAMERA CONTROLS
-     
-     ************************************************************************/
-	switch(key)
-	{
+	/* arrow key presses move the camera and the page up and page down keys move in and out of the screen */
+	switch(key){
+
 	case GLUT_KEY_LEFT: 
-		eye[0] -=1;
-		
-	break; 
+		eye[0] -=1;	
+	break;
+
 	case GLUT_KEY_RIGHT: 
 		eye[0] +=1;
-		
 	break;
+
 	case GLUT_KEY_DOWN: 
 		if(eye[1] != 0){
 		eye[1] -=1;
-		}
-		 
-	break; 
+		}	 
+	break;
+
 	case GLUT_KEY_UP:
 		//stop moving up if it is larger than max height 
 		eye[1] +=1;
-		
-		
-	break; 
+	break;
+
 	case GLUT_KEY_PAGE_UP:
 		eye[2] -=1;//into the screen
 
 	break;
+
 	case GLUT_KEY_PAGE_DOWN:
 		eye[2] +=1;//out of the screen
-	break;		
+	break;
+
     }
+
 	glutPostRedisplay();
 }
-/*menu - used to change the size of the grid by using right clicks*/
+
+/*menu() - drop down menu used to change the size of the grid by using right clicks
+
+int key - Takes in a key to shown the menu (Right Mouse Button in this case)
+*/
 void menu(int key){
 	
 	switch(key){
+
+		//Changes the terrain to a 50 x 50 grid
 		case'1':
 		sizex = 50;
 		sizez = 50;
 		reset();
 		break;
 		
+		//Changes the terrain to a 100 x 100 grid
 		case'2':
 		sizex = 100;
 		sizez = 100;
 		reset();
 		break;
 
+		//Changes the terrain to a 150 x 150 grid
 		case'3':
 		sizex = 150;
 		sizez = 150;
 		reset();
 		break;
 		
+		//Changes the terrain to a 200 x 200 grid
 		case'4':
 		sizex = 200;
 		sizez = 200;
 		reset();
 		break;
 
+		//Changes the terrain to a 300 x 300 grid
 		case'5':
 		sizex = 300;
 		sizez = 300;
@@ -463,6 +528,9 @@ void menu(int key){
 
 
 }
+
+/*init(void) - Initializes the different GLUT and OpenGL methods for drawing graphics
+this also enables lighting, materials, viewing perspectives, and culling.*/
 void init(void)
 {
 	glClearColor(0, 0, 0, 0);
@@ -489,25 +557,26 @@ void display(void)
 {
 	
 	//***************Material setup*****************//
-	float amb[] = {0.72,0.43,0.71,1.0};
-	float diff[] = {0.28,0.70,0.12,1.0};
-	float spec[] = {0.98,0.90,0.79,1.0};
-	float shiny = 23;
+	float amb[] = {0.72,0.43,0.71,1.0}; //Ambient material parameters
+	float diff[] = {0.28,0.70,0.12,1.0}; //Diffuse material parameters
+	float spec[] = {0.98,0.90,0.79,1.0}; //Specular material parameters
+	float shiny = 23; //Shininess material parameters
 
-	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, amb);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diff);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, spec);
-	glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shiny);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, amb); //Set the ambient material
+	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, diff); //Set the diffuse material
+	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, spec); //Set the specular material
+	glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shiny); //Set the shiny material
 	glColorMaterial(GL_AMBIENT,GL_DIFFUSE);
 	//************** Light setup*******************//
 	GLfloat DiffuseLight1[] = {1.0,0.0,0.0};//red light
 	GLfloat AmbientLight1[] = {1.0,0.0,0.0};
 	GLfloat DiffuseLight2[] = {0.0,1.0,0.0};//green light
 	GLfloat AmbientLight2[] = {0.0,1.0,0.0};
-	glLightfv(GL_LIGHT0,GL_DIFFUSE,DiffuseLight1);
-	glLightfv(GL_LIGHT1,GL_DIFFUSE,DiffuseLight2);
-	glLightfv(GL_LIGHT0,GL_AMBIENT,AmbientLight1);
-	glLightfv(GL_LIGHT1,GL_AMBIENT,AmbientLight2);
+
+	glLightfv(GL_LIGHT0,GL_DIFFUSE,DiffuseLight1); //Set the diffuse light for light1
+	glLightfv(GL_LIGHT1,GL_DIFFUSE,DiffuseLight2); //Set the diffuse light for light2
+	glLightfv(GL_LIGHT0,GL_AMBIENT,AmbientLight1); //Set the ambient light for light1
+	glLightfv(GL_LIGHT1,GL_AMBIENT,AmbientLight2); //Set the ambient light for light2
 
 
 
@@ -560,6 +629,8 @@ int main(int argc, char** argv)
 	glEnable(GL_DEPTH_TEST);
 	instructions();
 	init();
+
+	//Creates menu with different menu entries
 	glutCreateMenu(menu);
 	glutAddMenuEntry("50 x 50", '1');
 	glutAddMenuEntry("100 x 100", '2');
